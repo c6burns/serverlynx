@@ -1,9 +1,0 @@
-D:\Work\code\serverlynx\MSBuild\CMake\bin\Debug\netcoreapp2.2\CMake.deps.json
-D:\Work\code\serverlynx\MSBuild\CMake\bin\Debug\netcoreapp2.2\CMake.dll
-D:\Work\code\serverlynx\MSBuild\CMake\bin\Debug\netcoreapp2.2\CMake.pdb
-D:\Work\code\serverlynx\MSBuild\CMake\obj\Debug\netcoreapp2.2\CMake.csprojAssemblyReference.cache
-D:\Work\code\serverlynx\MSBuild\CMake\obj\Debug\netcoreapp2.2\CMake.csproj.CoreCompileInputs.cache
-D:\Work\code\serverlynx\MSBuild\CMake\obj\Debug\netcoreapp2.2\CMake.AssemblyInfoInputs.cache
-D:\Work\code\serverlynx\MSBuild\CMake\obj\Debug\netcoreapp2.2\CMake.AssemblyInfo.cs
-D:\Work\code\serverlynx\MSBuild\CMake\obj\Debug\netcoreapp2.2\CMake.dll
-D:\Work\code\serverlynx\MSBuild\CMake\obj\Debug\netcoreapp2.2\CMake.pdb
