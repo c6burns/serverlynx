@@ -1,8 +1,9 @@
-UnityProject/[Ll]ibrary/
-UnityProject/[Tt]emp/
-UnityProject/[Oo]bj/
-UnityProject/[Bb]uild*
-UnityProject/Assets/AssetStoreTools*
+*UnityProject/[Ll]ibrary/
+*UnityProject/[Tt]emp/
+*UnityProject/[Oo]bj/
+*UnityProject/[Bb]uild*
+*UnityProject/[Pp]rojectSettings*
+*UnityProject/Assets/AssetStoreTools*
 [Bb]uild*
 deps
 
