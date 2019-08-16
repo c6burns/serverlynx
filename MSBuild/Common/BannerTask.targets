@@ -6,7 +6,7 @@
         <Task>
             <Reference Include="$(SdkDir)Microsoft.Build.Framework.dll" />
             <Reference Include="$(SdkDir)Microsoft.Build.Utilities.Core.dll" />
-            <Code Type="Class" Language="cs" Source="$(CsDir)Common\BannerTask.cs" />
+            <Code Type="Class" Language="cs" Source="$(CsDir)Common/BannerTask.cs" />
         </Task>
     </UsingTask>
 </Project>
