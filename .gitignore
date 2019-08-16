@@ -8,6 +8,8 @@
 *UnityProject/*.csproj
 [Bb]uild*
 deps
+**/bin/*
+**/obj/*
 
 # Visual Studio cache directory
 **.vs/
