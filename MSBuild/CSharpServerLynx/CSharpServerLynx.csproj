@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <Import Project="$(CsDir)Common\CMake.Content.props" />
+
+    <ItemGroup>
+        <ProjectReference Include="$(CsDir)CMakeBuild\CMakeBuild.csproj">
+            <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+            <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+        </ProjectReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="$(SlnDir)UnityProject\Assets\SockLynx\Scripts\*.cs" />
+    </ItemGroup>
+
+</Project>

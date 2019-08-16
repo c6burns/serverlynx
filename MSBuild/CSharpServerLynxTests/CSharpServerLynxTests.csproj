@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <IsTestProject>true</IsTestProject>
+        <IsPackable>false</IsPackable>
+        <DefineConstants>$(DefineConstants);SL_TESTING_ENABLED</DefineConstants>
+    </PropertyGroup>
+
+    <Import Project="$(CsDir)Common\CMake.Content.props" />
+
+    <ItemGroup>
+        <ProjectReference Include="$(CsDir)SockLynx\SockLynx.csproj">
+            <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+            <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+        </ProjectReference>
+        <ProjectReference Include="$(CsDir)CMakeBuild\CMakeBuild.csproj">
+            <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+            <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+        </ProjectReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- <Compile Include="$(SlnDir)UnityProject\Assets\SockLynx\Scripts\*.cs" /> -->
+        <Compile Include="$(SlnDir)UnityProject\Assets\SockLynx\Tests\Editor\*.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="NUnit" Version="3.12.0" />
+        <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.1" />
+    </ItemGroup>
+
+</Project>
