@@ -42,7 +42,7 @@ namespace SL
     {
         const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
-        public const string SL_DSO_NAME = "socklynxDSO";
+        public const string SL_DSO_NAME = "svlynx";
         public const int SL_OK = 0;
         public const int SL_IP4_SIZE = sizeof(uint);
         public const int SL_IP6_SIZE = 16;
@@ -95,7 +95,7 @@ namespace SL
         [StructLayout(LayoutKind.Sequential)]
         public struct Buffer
         {
-#if SL_SOCK_API_WINSOCK
+#if SL_SOCK_API_WINSOCK || SVL_SOCK_API_WINSOCK
             public uint len;
             public byte* buf;
 #else
@@ -107,7 +107,7 @@ namespace SL
             {
                 Buffer buffer = default;
                 buffer.buf = buf;
-#if SL_SOCK_API_WINSOCK
+#if SL_SOCK_API_WINSOCK || SVL_SOCK_API_WINSOCK
                 buffer.len = len;
 #else
                 buffer.len = (void*)len;

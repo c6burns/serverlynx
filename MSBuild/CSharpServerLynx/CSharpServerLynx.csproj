@@ -6,17 +6,17 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
-    <Import Project="$(CsDir)Common\CMake.Content.props" />
+    <ItemGroup>
+        <Compile Include="$(UnityLynxDir)Scripts\*.cs" />
+    </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="$(CsDir)CMakeBuild\CMakeBuild.csproj">
+        <ProjectReference Include="$(CsDir)CMake\CMake.csproj">
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
             <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
         </ProjectReference>
     </ItemGroup>
 
-    <ItemGroup>
-        <Compile Include="$(SlnDir)UnityProject\Assets\SockLynx\Scripts\*.cs" />
-    </ItemGroup>
+    <Import Project="$(CsDir)CMake\CMake.Copy.targets" />
 
 </Project>

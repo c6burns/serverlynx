@@ -29,15 +29,20 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <PluginDir>$(SlnDir)SVLUnityProject\Assets\ServerLynx\Plugins\</PluginDir>
+        <UnityProjDir>$(SlnDir)SVLUnityProject\</UnityProjDir>
+        <UnityLynxDir>$(UnityProjDir)Assets\ServerLynx\</UnityLynxDir>
+        <PluginDir>$(UnityLynxDir)Plugins\</PluginDir>
         <PluginArchDir>x86_64\</PluginArchDir>
-        <PluginBaseName>socklynxDSO</PluginBaseName>
+        <PluginBaseName>svlynx</PluginBaseName>
         
         <PluginPrefix Condition="'$(OSPlatformLinux)' == 'true'">lib</PluginPrefix>
 
         <PluginExt Condition="'$(PluginExt)' == ''">dll</PluginExt>
         <PluginExt Condition="'$(OSPlatformLinux)' == 'true'">so</PluginExt>
         <PluginExt Condition="'$(OSPlatformOSX)' == 'true'">dylib</PluginExt>
+
+        <PluginFullName>$(PluginPrefix)$(PluginBaseName).$(PluginExt)</PluginFullName>
+        <PluginFullPath>$(PluginDir)$(PluginArchDir)$(PluginFullName)</PluginFullPath>
     </PropertyGroup>
     
 </Project>
