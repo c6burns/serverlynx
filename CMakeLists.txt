@@ -24,6 +24,8 @@ cmake_minimum_required(VERSION 3.1)
 project(svlynx LANGUAGES C)
 enable_testing()
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 set(SVL_OUTPUT_NAME ${CMAKE_SHARED_LIBRARY_PREFIX}svlynx${CMAKE_SHARED_LIBRARY_SUFFIX})
 set(SVL_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(SVL_OUTPUT_FILE ${SVL_OUTPUT_DIR}/${SVL_OUTPUT_NAME} CACHE FILEPATH "Output path of module library (DSO)")
@@ -145,7 +147,7 @@ add_custom_command(
 if(APPLE)
 	set_target_properties(socklynxDSO PROPERTIES BUNDLE TRUE)
     string(REPLACE ".dylib" ".bundle" SVL_OUTPUT_FILE_BUNDLE ${SVL_OUTPUT_FILE})
-	
+
 	# copy dylib for .net core
 	add_custom_command(
 		TARGET socklynxDSO

@@ -99,8 +99,8 @@ CMakeHelpLink - link to repo or other magical site when error occurs
 
     <Target Name="CMakeBuildTarget" BeforeTargets="Build;VSTest">
         <Message Text="CMake - building $(CMakeBuildType) $(Platform): $(CMakeProjName)" Importance="high" />
-        <Message Text="CMake - CMake --build . --config $(CMakeBuildType)" Importance="high" />
-        <Exec Command="CMake --build . --config $(CMakeBuildType)" WorkingDirectory="$(CMakeBinaryDir)" StandardOutputImportance="low" StandardErrorImportance="high" />
+        <Message Text="CMake - cmake --build . --config $(CMakeBuildType)" Importance="high" />
+        <Exec Command="cmake --build . --config $(CMakeBuildType)" WorkingDirectory="$(CMakeBinaryDir)" StandardOutputImportance="low" StandardErrorImportance="high" />
         <!--<Message Text="CMake - copy $(CMakeBinaryDir)$(PluginFullName) -> $(PluginFullPath)" Importance="high" />-->
         <Copy SourceFiles="$(CMakeBinaryDir)$(PluginFullName)" DestinationFiles="$(PluginFullPath)" SkipUnchangedFiles="true" />
         <OnError ExecuteTargets="CMakeBuildFailed" />
