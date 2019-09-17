@@ -201,15 +201,23 @@ int svl_service_start(svl_service_t *service)
     TN_ASSERT(service);
 
     svl_service_state_t state = svl_service_state(service);
-    TN_GUARD_CLEANUP(state != SVL_SERVICE_NEW && state != SVL_SERVICE_STOPPED && state != SVL_SERVICE_ERROR);
-    svl_service_set_state(service, SVL_SERVICE_STARTING);
+    switch (state) {
+    case SVL_SERVICE_STARTING:
+    case SVL_SERVICE_STARTED:
+        return TN_SUCCESS;
+    case SVL_SERVICE_NEW:
+    case SVL_SERVICE_STOPPED:
+        break;
+    case SVL_SERVICE_STOPPING:
+    case SVL_SERVICE_ERROR:
+    case SVL_SERVICE_INVALID:
+        return TN_ERROR;
+    }
 
-    TN_GUARD_CLEANUP(tn_thread_launch(&service->thread_io, svl_service_io_thread, service));
+    svl_service_set_state(service, SVL_SERVICE_STARTING);
+    TN_GUARD(tn_thread_launch(&service->thread_io, svl_service_io_thread, service));
 
     return TN_SUCCESS;
-
-cleanup:
-    return TN_ERROR;
 }
 
 // --------------------------------------------------------------------------------------------------------------
@@ -218,12 +226,26 @@ int svl_service_stop(svl_service_t *service)
     TN_ASSERT(service);
 
     svl_service_state_t state = svl_service_state(service);
-    TN_GUARD(state == SVL_SERVICE_STOPPING || state == SVL_SERVICE_STOPPED || state == SVL_SERVICE_ERROR);
-    svl_service_set_state(service, SVL_SERVICE_STOPPING);
+    switch (state) {
+    case SVL_SERVICE_NEW:
+    case SVL_SERVICE_STOPPING:
+    case SVL_SERVICE_STOPPED:
+        return TN_SUCCESS;
+    case SVL_SERVICE_STARTING:
+    case SVL_SERVICE_STARTED:
+        break;
+    case SVL_SERVICE_ERROR:
+    case SVL_SERVICE_INVALID:
+        return TN_ERROR;
+    }
 
     tn_log_trace("tcp service stopping");
-    if ((tn_thread_join(&service->thread_io))) {
+    svl_service_set_state(service, SVL_SERVICE_STOPPING);
+
+    if (tn_thread_join(&service->thread_io)) {
         tn_log_error("error joining IO thread");
+        svl_service_set_state(service, SVL_SERVICE_ERROR);
+        return TN_ERROR;
     }
 
     svl_service_set_state(service, SVL_SERVICE_STOPPED);

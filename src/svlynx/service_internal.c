@@ -314,6 +314,7 @@ void on_timer_cb(uv_timer_t *handle)
         if (!uv_is_closing((uv_handle_t *)priv->uv_accept_timer)) uv_close((uv_handle_t *)priv->uv_accept_timer, NULL);
         if (!uv_is_closing((uv_handle_t *)priv->uv_prep)) uv_close((uv_handle_t *)priv->uv_prep, NULL);
         if (!uv_is_closing((uv_handle_t *)priv->uv_check)) uv_close((uv_handle_t *)priv->uv_check, NULL);
+        if (!uv_is_closing((uv_handle_t *)priv->uv_signal)) uv_close((uv_handle_t *)priv->uv_signal, NULL);
     }
 
     return;

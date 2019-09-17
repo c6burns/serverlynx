@@ -23,6 +23,10 @@
 #define SL_EXPORTS
 
 #include "socklynx/socklynx.h"
+#include "svlynx/service.h"
+#include "tn/allocator.h"
+#include "tn/error.h"
+#include "tn/log.h"
 
 SL_API int32_t SL_CALL socklynx_setup(sl_sys_t *sys)
 {
@@ -68,4 +72,82 @@ SL_API int32_t SL_CALL socklynx_socket_recv(sl_sock_t *sock, sl_buf_t *buf, int3
     SL_GUARD_NULL(buf);
     SL_GUARD_NULL(endpoint);
     return sl_sock_recv(sock, buf, bufcount, endpoint);
+}
+
+SL_API int32_t SL_CALL servlynx_setup(sl_sys_t *sys, svl_service_t **service_ptr)
+{
+    TN_GUARD_NULL(sys);
+    TN_GUARD_NULL(service_ptr);
+    if (*service_ptr) return TN_SUCCESS;
+
+    TN_GUARD(sl_sys_setup(sys));
+
+    TN_GUARD_NULL(*service_ptr = TN_MEM_ACQUIRE(sizeof(**service_ptr)));
+    return svl_service_setup(*service_ptr, 1000);
+}
+
+int service_stop(svl_service_t *service)
+{
+    TN_GUARD_NULL(service);
+
+    svl_service_state_t state = svl_service_state(service);
+    switch (state) {
+    case SVL_SERVICE_STARTING:
+    case SVL_SERVICE_STARTED:
+        TN_GUARD(svl_service_stop(service));
+    case SVL_SERVICE_NEW:
+    case SVL_SERVICE_STOPPING:
+    case SVL_SERVICE_STOPPED:
+        break;
+    case SVL_SERVICE_ERROR:
+    case SVL_SERVICE_INVALID:
+        return TN_ERROR;
+    }
+
+    int total_wait_ms = 0;
+    uint64_t ms50 = tn_tstamp_convert(50, TN_TSTAMP_MS, TN_TSTAMP_NS);
+    while (state == SVL_SERVICE_STARTING || state == SVL_SERVICE_STARTED || state == SVL_SERVICE_STOPPING) {
+        tn_thread_sleep(ms50);
+        state = svl_service_state(service);
+
+        total_wait_ms += 50;
+        if (total_wait_ms >= 1000) return TN_ERROR;
+    }
+
+    return TN_SUCCESS;
+}
+
+SL_API int32_t SL_CALL servlynx_cleanup(sl_sys_t *sys, svl_service_t **service_ptr)
+{
+    if (service_ptr) {
+        if (service_stop(*service_ptr)) {
+            tn_log_error("service_stop failed");
+        }
+        TN_MEM_RELEASE(*service_ptr);
+        *service_ptr = NULL;
+    }
+
+    if (sys) {
+        if (sl_sys_cleanup(sys)) {
+            tn_log_error("sl_sys_cleanup failed");
+        }
+    }
+
+    return TN_SUCCESS;
+}
+
+SL_API int32_t SL_CALL servlynx_start(svl_service_t *service, tn_endpoint_t *endpoint)
+{
+    TN_GUARD_NULL(service);
+    if (endpoint) {
+        //TN_GUARD(!tn_endpoint_equal_addr(&service->host_listen, endpoint));
+        TN_GUARD(svl_service_listen(service, endpoint));
+    }
+    return svl_service_start(service);
+}
+
+SL_API int32_t SL_CALL servlynx_stop(svl_service_t *service)
+{
+    TN_GUARD_NULL(service);
+    return service_stop(service);
 }
