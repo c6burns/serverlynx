@@ -32,45 +32,43 @@ namespace SL
 {
     public unsafe static class API
     {
-        const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
-
-        [MethodImpl(INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Setup(C.Context* ctx)
         {
             return (C.socklynx_setup(ctx) == C.SL_OK);
         }
 
-        [MethodImpl(INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Cleanup(C.Context* ctx)
         {
             return (C.socklynx_cleanup(ctx) == C.SL_OK);
         }
 
-        [MethodImpl(INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool SocketOpen(C.Socket* sock)
         {
             return (C.socklynx_socket_open(sock) == C.SL_OK);
         }
 
-        [MethodImpl(INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool SocketClose(C.Socket* sock)
         {
             return (C.socklynx_socket_close(sock) == C.SL_OK);
         }
 
-        [MethodImpl(INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool SocketNonBlocking(C.Socket* sock, bool enabled)
         {
             return (C.socklynx_socket_nonblocking(sock, enabled ? 1 : 0) == C.SL_OK);
         }
 
-        [MethodImpl(INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int SocketSend(C.Socket* sock, C.Buffer* bufferArray, int bufferCount, C.Endpoint* endpoint)
         {
             return C.socklynx_socket_send(sock, bufferArray, bufferCount, endpoint);
         }
 
-        [MethodImpl(INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int SocketRecv(C.Socket* sock, C.Buffer* bufferArray, int bufferCount, C.Endpoint* endpoint)
         {
             return C.socklynx_socket_recv(sock, bufferArray, bufferCount, endpoint);

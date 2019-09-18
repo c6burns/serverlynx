@@ -32,51 +32,49 @@ namespace SVL
 {
     public unsafe static class API
     {
-        const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
-
-        [MethodImpl(INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Setup(SL.C.Context* ctx, void** service)
         {
             return (SL.C.servlynx_setup(ctx, service) == SL.C.SL_OK);
         }
 
-        [MethodImpl(INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Cleanup(SL.C.Context* ctx, void** service)
         {
             return (SL.C.servlynx_cleanup(ctx, service) == SL.C.SL_OK);
         }
 
-        [MethodImpl(INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Start(void* service, SL.C.Endpoint* endpoint = null)
         {
             return (SL.C.servlynx_start(service, endpoint) == SL.C.SL_OK);
         }
 
-        [MethodImpl(INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Stop(void* service)
         {
             return (SL.C.servlynx_stop(service) == SL.C.SL_OK);
         }
 
-        //[MethodImpl(INLINE)]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         //public static bool SocketOpen(SL.C.Socket* sock)
         //{
         //    return (SL.C.socklynx_socket_open(sock) == SL.C.SL_OK);
         //}
 
-        //[MethodImpl(INLINE)]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         //public static bool SocketClose(SL.C.Socket* sock)
         //{
         //    return (SL.C.socklynx_socket_close(sock) == SL.C.SL_OK);
         //}
 
-        //[MethodImpl(INLINE)]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         //public static int SocketSend(SL.C.Socket* sock, SL.C.Buffer* bufferArray, int bufferCount, SL.C.Endpoint* endpoint)
         //{
         //    return SL.C.socklynx_socket_send(sock, bufferArray, bufferCount, endpoint);
         //}
 
-        //[MethodImpl(INLINE)]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         //public static int SocketRecv(SL.C.Socket* sock, SL.C.Buffer* bufferArray, int bufferCount, SL.C.Endpoint* endpoint)
         //{
         //    return SL.C.socklynx_socket_recv(sock, bufferArray, bufferCount, endpoint);

@@ -101,9 +101,15 @@ CMakeHelpLink - link to repo or other magical site when error occurs
         <Message Text="CMake - building $(CMakeBuildType) $(Platform): $(CMakeProjName)" Importance="high" />
         <Message Text="CMake - cmake --build . --config $(CMakeBuildType)" Importance="high" />
         <Exec Command="cmake --build . --config $(CMakeBuildType)" WorkingDirectory="$(CMakeBinaryDir)" StandardOutputImportance="low" StandardErrorImportance="high" />
-        <!--<Message Text="CMake - copy $(CMakeBinaryDir)$(PluginFullName) -> $(PluginFullPath)" Importance="high" />-->
-        <Copy SourceFiles="$(CMakeBinaryDir)$(PluginFullName)" DestinationFiles="$(PluginFullPath)" SkipUnchangedFiles="true" />
         <OnError ExecuteTargets="CMakeBuildFailed" />
+    </Target>
+
+	<Target Name="CMakeCopyToUnity" BeforeTargets="Build;VSTest">
+        <Copy SourceFiles="$(CMakeBinaryDir)$(PluginFullName)" DestinationFiles="$(PluginFullPath)" SkipUnchangedFiles="true" />
+    </Target>
+
+	<Target Name="CMakeCopyToUnityOSX" BeforeTargets="Build;VSTest" Condition="'$(OSPlatformOSX)' == 'true'">
+        <Copy SourceFiles="$(CMakeBinaryDir)$(PluginFullName)" DestinationFiles="$(PluginFullPathOSX)" SkipUnchangedFiles="true" />
     </Target>
 
     <Target Name="CMakeBuildSuccess" BeforeTargets="Build;VSTest">

@@ -34,33 +34,33 @@ set(SVL_LINK_LIBS "")
 set(SVL_DEFINES "")
 
 if(NOT EXISTS ${SVL_DEPS_DIR})
-	file(MAKE_DIRECTORY ${SVL_DEPS_DIR})
+    file(MAKE_DIRECTORY ${SVL_DEPS_DIR})
 endif()
 
 if(MSVC)
-	set(CompilerFlags
-		CMAKE_C_FLAGS
-		CMAKE_C_FLAGS_DEBUG
-		CMAKE_C_FLAGS_RELEASE
-	)
+    set(CompilerFlags
+        CMAKE_C_FLAGS
+        CMAKE_C_FLAGS_DEBUG
+        CMAKE_C_FLAGS_RELEASE
+    )
 
-	foreach(CompilerFlag ${CompilerFlags})
-	  string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
-	endforeach()
+    foreach(CompilerFlag ${CompilerFlags})
+      string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+    endforeach()
 
-	list(APPEND SVL_DEFINES -D_CRT_SECURE_NO_WARNINGS)
+    list(APPEND SVL_DEFINES -D_CRT_SECURE_NO_WARNINGS)
 endif()
 
 #
 # build socklynx
 if(NOT EXISTS ${SVL_DEPS_DIR}/socklynx)
-	execute_process(COMMAND git clone https://github.com/c6burns/socklynx WORKING_DIRECTORY ${SVL_DEPS_DIR})
+    execute_process(COMMAND git clone https://github.com/c6burns/socklynx WORKING_DIRECTORY ${SVL_DEPS_DIR})
 endif()
 
 add_custom_target(socklynx_update
-	COMMAND git checkout master
-	COMMAND git pull
-	WORKING_DIRECTORY ${SVL_DEPS_DIR}/socklynx
+    COMMAND git checkout master
+    COMMAND git pull
+    WORKING_DIRECTORY ${SVL_DEPS_DIR}/socklynx
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps/socklynx/include)
@@ -70,13 +70,13 @@ add_dependencies(socklynxDSO socklynx_update)
 #
 # build tn
 if(NOT EXISTS ${SVL_DEPS_DIR}/tn)
-	execute_process(COMMAND git clone https://github.com/c6burns/tn WORKING_DIRECTORY ${SVL_DEPS_DIR})
+    execute_process(COMMAND git clone https://github.com/c6burns/tn WORKING_DIRECTORY ${SVL_DEPS_DIR})
 endif()
 
 add_custom_target(tn_update
-	COMMAND git checkout master
-	COMMAND git pull
-	WORKING_DIRECTORY ${SVL_DEPS_DIR}/tn
+    COMMAND git checkout master
+    COMMAND git pull
+    WORKING_DIRECTORY ${SVL_DEPS_DIR}/tn
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps/tn/include)
@@ -90,13 +90,13 @@ list(APPEND SVL_LINK_LIBS tn)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/svlynx)
 add_library(svlynx
-	include/svlynx/svlynx.h
-	src/svlynx/service.c
-	include/svlynx/service.h
-	src/svlynx/service_internal.c
-	src/svlynx/service_internal.h
-	src/svlynx/link.c
-	include/svlynx/link.h
+    include/svlynx/svlynx.h
+    src/svlynx/service.c
+    include/svlynx/service.h
+    src/svlynx/service_internal.c
+    src/svlynx/service_internal.h
+    src/svlynx/link.c
+    include/svlynx/link.h
 )
 target_link_libraries(svlynx ${SVL_LINK_LIBS})
 target_compile_definitions(svlynx PRIVATE ${SVL_DEFINES})
@@ -106,7 +106,7 @@ list(APPEND SVL_LINK_LIBS svlynx)
 #
 # build svlynxDSO
 add_library(svlynxDSO MODULE
-	src/svlynx/plugin.c
+    src/svlynx/plugin.c
 )
 target_link_libraries(svlynxDSO ${SVL_LINK_LIBS})
 target_compile_definitions(svlynxDSO PRIVATE ${SVL_DEFINES})
@@ -116,8 +116,8 @@ add_dependencies(svlynxDSO svlynx)
 # build svlynx_sv
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/svlynx_sv)
 add_executable(svlynx_sv
-	src/svlynx_sv/svlynx_sv.c
-	include/svlynx_sv/svlynx_sv.h
+    src/svlynx_sv/svlynx_sv.c
+    include/svlynx_sv/svlynx_sv.h
 )
 target_link_libraries(svlynx_sv ${SVL_LINK_LIBS})
 target_compile_definitions(svlynx_sv PRIVATE ${SVL_DEFINES})
@@ -127,8 +127,8 @@ add_dependencies(svlynx_sv svlynx)
 # build svlynx_lg
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/svlynx_lg)
 add_executable(svlynx_lg
-	src/svlynx_lg/svlynx_lg.c
-	include/svlynx_lg/svlynx_lg.h
+    src/svlynx_lg/svlynx_lg.c
+    include/svlynx_lg/svlynx_lg.h
 )
 target_link_libraries(svlynx_lg ${SVL_LINK_LIBS})
 target_compile_definitions(svlynx_lg PRIVATE ${SVL_DEFINES})
@@ -137,33 +137,33 @@ add_dependencies(svlynx_lg svlynx)
 #
 # copy outputs
 add_custom_command(
-	TARGET svlynxDSO
-	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy
-		$<TARGET_FILE:svlynxDSO>
-		${SVL_OUTPUT_FILE}
+    TARGET svlynxDSO
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+        $<TARGET_FILE:svlynxDSO>
+        ${SVL_OUTPUT_FILE}
 )
 
 if(APPLE)
-	set_target_properties(socklynxDSO PROPERTIES BUNDLE TRUE)
-    string(REPLACE ".dylib" ".bundle" SVL_OUTPUT_FILE_BUNDLE ${SVL_OUTPUT_FILE})
+    set_target_properties(svlynxDSO PROPERTIES BUNDLE TRUE)
+    string(REPLACE ".bundle" ".dylib" SVL_OUTPUT_FILE_BUNDLE ${SVL_OUTPUT_FILE})
 
-	# copy dylib for .net core
-	add_custom_command(
-		TARGET socklynxDSO
-		POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy
-			$<TARGET_FILE:socklynxDSO>
-			${SVL_OUTPUT_FILE_BUNDLE}
-	)
+    # copy dylib for .net core
+    add_custom_command(
+        TARGET svlynxDSO
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            $<TARGET_FILE:svlynxDSO>
+            ${SVL_OUTPUT_FILE_BUNDLE}
+    )
 endif()
 
 #
 # build svlynx test executables
 include_directories(tests)
 set(SVL_TESTS_C
-	"tests/test_service.c"
-	"tests/test_plugin.c"
+    "tests/test_service.c"
+    "tests/test_plugin.c"
 )
 set(TESTS ${SVL_TESTS_C})
 

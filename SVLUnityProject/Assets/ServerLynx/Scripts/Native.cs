@@ -40,8 +40,6 @@ namespace SL
     [SuppressUnmanagedCodeSecurity]
     public static unsafe class C
     {
-        const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
-
         public const string SL_DSO_NAME = "svlynx";
         public const int SL_OK = 0;
         public const int SL_IP4_SIZE = sizeof(uint);
@@ -85,7 +83,7 @@ namespace SL
             [FieldOffset(4)] public readonly ushort af_inet;
             [FieldOffset(6)] public readonly ushort af_inet6;
 
-            [MethodImpl(INLINE)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool Initialized(Context* ctx)
             {
                 return (ctx->state == ContextState.Started);
@@ -102,7 +100,7 @@ namespace SL
             public byte* buf;
             public void* len;
 #endif
-            [MethodImpl(INLINE)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Buffer New(byte* buf, uint len)
             {
                 Buffer buffer = default;
@@ -114,7 +112,7 @@ namespace SL
 #endif
                 return buffer;
             }
-            [MethodImpl(INLINE)] public static Buffer New(byte* buf, int len) => New(buf, (uint)len);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] public static Buffer New(byte* buf, int len) => New(buf, (uint)len);
         }
 
         [StructLayout(LayoutKind.Explicit, Size = SL_IP4_SIZE)]
@@ -123,7 +121,7 @@ namespace SL
             [FieldOffset(0)] public uint int_addr;
             [FieldOffset(0)] public fixed byte byte_addr[4];
 
-            [MethodImpl(INLINE)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static IPv4 New(byte b0, byte b1, byte b2, byte b3)
             {
                 IPv4 ip = default;
@@ -142,7 +140,7 @@ namespace SL
             [FieldOffset(0)] public fixed byte byte_addr[16];
             [FieldOffset(0)] public fixed ushort short_addr[8];
 
-            [MethodImpl(INLINE)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static IPv6 New(ushort s0, ushort s1, ushort s2, ushort s3, ushort s4, ushort s5, ushort s6, ushort s7)
             {
                 IPv6 ip = default;
@@ -157,7 +155,7 @@ namespace SL
                 return ip;
             }
 
-            [MethodImpl(INLINE)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static IPv6 New(int s0, int s1, int s2, int s3, int s4, int s5, int s6, int s7)
             {
                 return New((ushort)s0, (ushort)s1, (ushort)s2, (ushort)s3, (ushort)s4, (ushort)s5, (ushort)s6, (ushort)s7);
@@ -180,7 +178,7 @@ namespace SL
             [FieldOffset(8)] public IPv6 addr6;
             [FieldOffset(24)] public uint scope_id;
 
-            [MethodImpl(INLINE)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Endpoint NewV4(Context* ctx, ushort port = 0, IPv4 addr4 = default)
             {
                 Endpoint endpoint = default;
@@ -190,14 +188,14 @@ namespace SL
                 return endpoint;
             }
 
-            [MethodImpl(INLINE)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Endpoint NewV4(Context* ctx, int port = 0, IPv4 addr4 = default)
             {
                 return NewV4(ctx, (ushort)port, addr4);
             }
 
 #if SL_IPV6_ENABLED
-            [MethodImpl(INLINE)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Endpoint NewV6(Context* ctx, ushort port = 0, IPv6 addr6 = default, uint flowinfo = 0, uint scope_id = 0)
             {
                 Endpoint endpoint = default;
@@ -209,7 +207,7 @@ namespace SL
                 return endpoint;
             }
 
-            [MethodImpl(INLINE)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Endpoint NewV6(Context* ctx, int port = 0, IPv6 addr6 = default, uint flowinfo = 0, uint scope_id = 0)
             {
                 return NewV6(ctx, (ushort)port, addr6, flowinfo, scope_id);
@@ -249,7 +247,7 @@ namespace SL
             [FieldOffset(28)] public SocketFlags flags;
             [FieldOffset(32)] public Endpoint endpoint;
 
-            [MethodImpl(INLINE)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Socket NewUDP(Context* ctx, Endpoint endpoint = default)
             {
                 Socket sock = default;
@@ -259,7 +257,7 @@ namespace SL
                 return sock;
             }
 
-            [MethodImpl(INLINE)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool HasFlag(Socket* sock, SocketFlags flags)
             {
                 return sock->flags.HasFlag(flags);

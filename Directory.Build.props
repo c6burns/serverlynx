@@ -36,6 +36,7 @@
         <PluginBaseName>svlynx</PluginBaseName>
         
         <PluginPrefix Condition="'$(OSPlatformLinux)' == 'true'">lib</PluginPrefix>
+		<PluginPrefix Condition="'$(OSPlatformOSX)' == 'true'">lib</PluginPrefix>
 
         <PluginExt Condition="'$(PluginExt)' == ''">dll</PluginExt>
         <PluginExt Condition="'$(OSPlatformLinux)' == 'true'">so</PluginExt>
@@ -43,6 +44,7 @@
 
         <PluginFullName>$(PluginPrefix)$(PluginBaseName).$(PluginExt)</PluginFullName>
         <PluginFullPath>$(PluginDir)$(PluginArchDir)$(PluginFullName)</PluginFullPath>
+		<PluginFullPathOSX>$(PluginDir)$(PluginArchDir)$(PluginBaseName).bundle</PluginFullPathOSX>
     </PropertyGroup>
     
 </Project>
