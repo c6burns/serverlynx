@@ -157,3 +157,32 @@ if(APPLE)
 			${SVL_OUTPUT_FILE_BUNDLE}
 	)
 endif()
+
+#
+# build svlynx test executables
+include_directories(tests)
+set(SVL_TESTS_C
+	"tests/test_service.c"
+	"tests/test_plugin.c"
+)
+set(TESTS ${SVL_TESTS_C})
+
+tn_add_test_case(test_svl_service_setup_cleanup)
+tn_add_test_case(test_svl_service_setup_cleanup_twice)
+tn_add_test_case(test_svl_service_start_stop)
+tn_add_test_case(test_svl_service_start_stop_twice)
+tn_add_test_case(test_svl_service_start_stop_immediately)
+tn_add_test_case(test_svl_service_start_stop_immediately_twice)
+tn_add_test_case(test_svl_plugin_setup_cleanup)
+tn_add_test_case(test_svl_plugin_setup_cleanup_twice)
+tn_add_test_case(test_svl_plugin_start_stop)
+tn_add_test_case(test_svl_plugin_start_stop_twice)
+tn_add_test_case(test_svl_plugin_start_stop_immediately)
+tn_add_test_case(test_svl_plugin_start_stop_immediately_twice)
+
+tn_generate_test_driver(svl-tests svl)
+target_link_libraries(svl-tests ${SVL_LINK_LIBS})
+target_compile_definitions(svl-tests PRIVATE ${SVL_DEFINES})
+
+# runner for single test for easy debug step through an impl issue
+tn_test_single(test_plugin test_svl_plugin_start_stop_immediately "${SVL_LINK_LIBS}" "${SVL_DEFINES}")

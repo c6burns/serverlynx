@@ -300,6 +300,12 @@ cleanup:
     uv_close((uv_handle_t *)client_handle, on_close_link_cb);
 }
 
+// private --------------------------------------------------------------------------------------------------------------
+static inline void safe_close_uv_handle(uv_handle_t *handle)
+{
+    if (handle && !uv_is_closing(handle)) uv_close(handle, NULL);
+}
+
 // --------------------------------------------------------------------------------------------------------------
 void on_timer_cb(uv_timer_t *handle)
 {
@@ -310,14 +316,12 @@ void on_timer_cb(uv_timer_t *handle)
     TN_ASSERT(priv);
 
     if (svl_service_state(service) != SVL_SERVICE_STARTED) {
-        if (!uv_is_closing((uv_handle_t *)priv->tcp_handle)) uv_close((uv_handle_t *)priv->tcp_handle, NULL);
-        if (!uv_is_closing((uv_handle_t *)priv->uv_accept_timer)) uv_close((uv_handle_t *)priv->uv_accept_timer, NULL);
-        if (!uv_is_closing((uv_handle_t *)priv->uv_prep)) uv_close((uv_handle_t *)priv->uv_prep, NULL);
-        if (!uv_is_closing((uv_handle_t *)priv->uv_check)) uv_close((uv_handle_t *)priv->uv_check, NULL);
-        if (!uv_is_closing((uv_handle_t *)priv->uv_signal)) uv_close((uv_handle_t *)priv->uv_signal, NULL);
+        safe_close_uv_handle((uv_handle_t *)priv->tcp_handle);
+        safe_close_uv_handle((uv_handle_t *)priv->uv_accept_timer);
+        safe_close_uv_handle((uv_handle_t *)priv->uv_prep);
+        safe_close_uv_handle((uv_handle_t *)priv->uv_check);
+        safe_close_uv_handle((uv_handle_t *)priv->uv_signal);
     }
-
-    return;
 }
 
 // --------------------------------------------------------------------------------------------------------------

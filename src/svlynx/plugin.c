@@ -86,6 +86,23 @@ SL_API int32_t SL_CALL servlynx_setup(sl_sys_t *sys, svl_service_t **service_ptr
     return svl_service_setup(*service_ptr, 1000);
 }
 
+int service_state_wait(svl_service_t *service, svl_service_state_t desired_state, int wait_ms)
+{
+    int total_wait_ms = 0;
+    uint64_t ms50 = tn_tstamp_convert(50, TN_TSTAMP_MS, TN_TSTAMP_NS);
+
+    svl_service_state_t state = svl_service_state(service);
+    while (state != desired_state) {
+        tn_thread_sleep(ms50);
+        state = svl_service_state(service);
+
+        total_wait_ms += 50;
+        if (total_wait_ms >= wait_ms) return TN_ERROR;
+    }
+
+    return TN_SUCCESS;
+}
+
 int service_stop(svl_service_t *service)
 {
     TN_GUARD_NULL(service);
@@ -93,6 +110,7 @@ int service_stop(svl_service_t *service)
     svl_service_state_t state = svl_service_state(service);
     switch (state) {
     case SVL_SERVICE_STARTING:
+        TN_GUARD(service_state_wait(service, SVL_SERVICE_STARTED, 500));
     case SVL_SERVICE_STARTED:
         TN_GUARD(svl_service_stop(service));
     case SVL_SERVICE_NEW:
@@ -104,15 +122,7 @@ int service_stop(svl_service_t *service)
         return TN_ERROR;
     }
 
-    int total_wait_ms = 0;
-    uint64_t ms50 = tn_tstamp_convert(50, TN_TSTAMP_MS, TN_TSTAMP_NS);
-    while (state == SVL_SERVICE_STARTING || state == SVL_SERVICE_STARTED || state == SVL_SERVICE_STOPPING) {
-        tn_thread_sleep(ms50);
-        state = svl_service_state(service);
-
-        total_wait_ms += 50;
-        if (total_wait_ms >= 1000) return TN_ERROR;
-    }
+    TN_GUARD(service_state_wait(service, SVL_SERVICE_STOPPED, 500));
 
     return TN_SUCCESS;
 }

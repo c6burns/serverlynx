@@ -77,6 +77,7 @@ void svl_service_io_thread(void *data)
         tn_log_trace("Listening on %s:%u", ep_ip, ep_port);
     } else {
         tn_log_trace("No listener");
+        priv->tcp_handle = NULL;
     }
 
     if (svl_service_state(service) == SVL_SERVICE_STARTING) {
@@ -368,7 +369,7 @@ int svl_service_cmd_open(svl_service_t *service, const tn_endpoint_t *endpoint, 
     cmd_open->endpoint = *endpoint;
     *cmd_id = cmd_open->id;
     TN_GUARD_CLEANUP(tn_cmd_list_ready_push(&service->cmds, cmd_open));
-    
+
     return TN_SUCCESS;
 
 cleanup:
