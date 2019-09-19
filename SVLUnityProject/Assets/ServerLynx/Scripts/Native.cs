@@ -40,7 +40,7 @@ namespace SL
     [SuppressUnmanagedCodeSecurity]
     public static unsafe class C
     {
-        public const string SL_DSO_NAME = "svlynx";
+        public const string SL_DSO_NAME = "svlynxDSO";
         public const int SL_OK = 0;
         public const int SL_IP4_SIZE = sizeof(uint);
         public const int SL_IP6_SIZE = 16;

@@ -26,7 +26,7 @@ enable_testing()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(SVL_OUTPUT_NAME ${CMAKE_SHARED_LIBRARY_PREFIX}svlynx${CMAKE_SHARED_LIBRARY_SUFFIX})
+set(SVL_OUTPUT_NAME ${CMAKE_SHARED_LIBRARY_PREFIX}svlynxDSO${CMAKE_SHARED_LIBRARY_SUFFIX})
 set(SVL_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(SVL_OUTPUT_FILE ${SVL_OUTPUT_DIR}/${SVL_OUTPUT_NAME} CACHE FILEPATH "Output path of module library (DSO)")
 set(SVL_DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
@@ -184,9 +184,6 @@ tn_add_test_case(test_svl_plugin_start_stop_immediately_twice)
 tn_generate_test_driver(svl-tests svl)
 target_link_libraries(svl-tests ${SVL_LINK_LIBS})
 target_compile_definitions(svl-tests PRIVATE ${SVL_DEFINES})
-
-message("SVL_LINK_LIBS: ${SVL_LINK_LIBS}")
-message("SVL_DEFINES: ${SVL_DEFINES}")
 
 # runner for single test for easy debug step through an impl issue
 tn_test_single(test_plugin test_svl_plugin_start_stop_immediately "${SVL_LINK_LIBS}" "${SVL_DEFINES}")

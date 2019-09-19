@@ -1,11 +1,11 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    
+
     <PropertyGroup>
         <SlnDir>$(MSBuildThisFileDirectory)</SlnDir>
         <SlnDir Condition="!HasTrailingSlash('$(SlnDir)')">$(SlnDir)\</SlnDir>
-        
+
         <CsDir>$(SlnDir)MSBuild\</CsDir>
-        
+
         <SdkDir>$(MSBuildExtensionsPath)</SdkDir>
         <SdkDir Condition="!HasTrailingSlash('$(SdkDir)')">$(SdkDir)\</SdkDir>
     </PropertyGroup>
@@ -33,8 +33,8 @@
         <UnityLynxDir>$(UnityProjDir)Assets\ServerLynx\</UnityLynxDir>
         <PluginDir>$(UnityLynxDir)Plugins\</PluginDir>
         <PluginArchDir>x86_64\</PluginArchDir>
-        <PluginBaseName>svlynx</PluginBaseName>
-        
+        <PluginBaseName>svlynxDSO</PluginBaseName>
+
         <PluginPrefix Condition="'$(OSPlatformLinux)' == 'true'">lib</PluginPrefix>
 		<PluginPrefix Condition="'$(OSPlatformOSX)' == 'true'">lib</PluginPrefix>
 
@@ -46,5 +46,5 @@
         <PluginFullPath>$(PluginDir)$(PluginArchDir)$(PluginFullName)</PluginFullPath>
 		<PluginFullPathOSX>$(PluginDir)$(PluginArchDir)$(PluginBaseName).bundle</PluginFullPathOSX>
     </PropertyGroup>
-    
+
 </Project>

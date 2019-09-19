@@ -1,18 +1,19 @@
-#include <winsock2.h>
+#include "tn/error.h"
+#if TN_PLATFORM_WINDOWS
+#    include <winsock2.h>
+#    define SVL_SONAME "svlynxDSO.dll"
+#elif TN_PLATFORM_POSIX
+#    define SVL_SONAME "./libsvlynxDSO.so"
+#    elif TN_PLATFORM_OSX
+#    define SVL_SONAME "svlynxDSO.dylib"
+#else
+#    error "Invalid platform"
+#endif
+
 #include "tn/test_harness.h"
 #include "tn/dso.h"
 #include "socklynx/sys.h"
 #include "svlynx/service.h"
-
-#if TN_PLATFORM_WINDOWS
-#    define SVL_SONAME "svlynx.dll"
-#elif TN_PLATFORM_POSIX
-#    define SVL_SONAME "libsvlynx.so"
-#    elif TN_PLATFORM_OSX
-#    define SVL_SONAME "libsvlynx.dylib"
-#else
-#    error "Invalid platform"
-#endif
 
 #define SVL_DSO_NAME_SETUP "servlynx_setup"
 #define SVL_DSO_NAME_CLEANUP "servlynx_cleanup"
