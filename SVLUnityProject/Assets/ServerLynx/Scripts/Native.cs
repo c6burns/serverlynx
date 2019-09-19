@@ -25,6 +25,9 @@
 
 #if UNITY_STANDALONE_WIN || UNITY_XBONE
 #   define SL_SOCK_API_WINSOCK
+#   define SL_PLATFORM_WIN
+#elif UNITY_STANDALONE_OSX
+#   define SL_PLATFORM_OSX
 #endif
 
 using System.Security;
@@ -167,7 +170,12 @@ namespace SL
         public struct Endpoint
         {
             /* common members */
+#if SL_PLATFORM_OSX
+            [FieldOffset(0)] public byte len;
+            [FieldOffset(1)] public byte af;
+#else
             [FieldOffset(0)] public ushort af;
+#endif
             [FieldOffset(2)] public ushort port;
 
             /* ipv4 members and methods */
@@ -182,7 +190,11 @@ namespace SL
             public static Endpoint NewV4(Context* ctx, ushort port = 0, IPv4 addr4 = default)
             {
                 Endpoint endpoint = default;
-                endpoint.af = ctx->af_inet;
+#if SL_PLATFORM_OSX
+                endpoint.af = (byte)ctx->af_inet;
+#else
+                endpoint.af = (ushort)ctx->af_inet;
+#endif
                 endpoint.port = port;
                 endpoint.addr4 = addr4;
                 return endpoint;
@@ -199,7 +211,11 @@ namespace SL
             public static Endpoint NewV6(Context* ctx, ushort port = 0, IPv6 addr6 = default, uint flowinfo = 0, uint scope_id = 0)
             {
                 Endpoint endpoint = default;
-                endpoint.af = ctx->af_inet6;
+#if SL_PLATFORM_OSX
+                endpoint.af = (byte)ctx->af_inet6;
+#else
+                endpoint.af = (ushort)ctx->af_inet6;
+#endif
                 endpoint.port = port;
                 endpoint.flowinfo = flowinfo;
                 endpoint.scope_id = scope_id;

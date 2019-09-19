@@ -104,11 +104,11 @@ CMakeHelpLink - link to repo or other magical site when error occurs
         <OnError ExecuteTargets="CMakeBuildFailed" />
     </Target>
 
-	<Target Name="CMakeCopyToUnity" BeforeTargets="Build;VSTest">
+    <Target Name="CMakeCopyToUnity" BeforeTargets="Build;VSTest">
         <Copy SourceFiles="$(CMakeBinaryDir)$(PluginFullName)" DestinationFiles="$(PluginFullPath)" SkipUnchangedFiles="true" />
     </Target>
 
-	<Target Name="CMakeCopyToUnityOSX" BeforeTargets="Build;VSTest" Condition="'$(OSPlatformOSX)' == 'true'">
+    <Target Name="CMakeCopyToUnityOSX" BeforeTargets="Build;VSTest" Condition="'$(OSPlatformOSX)' == 'true'">
         <Copy SourceFiles="$(CMakeBinaryDir)$(PluginFullName)" DestinationFiles="$(PluginFullPathOSX)" SkipUnchangedFiles="true" />
     </Target>
 

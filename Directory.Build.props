@@ -17,15 +17,15 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(OSPlatformWindows)' == 'true'">
-        <DefineConstants>$(DefineConstants);SVL_PLATFORM_WINDOWS;SVL_SOCK_API_WINSOCK</DefineConstants>
+        <DefineConstants>$(DefineConstants);SL_PLATFORM_WINDOWS;SL_SOCK_API_WINSOCK</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(OSPlatformLinux)' == 'true'">
-        <DefineConstants>$(DefineConstants);SVL_PLATFORM_LINUX;SVL_SOCK_API_POSIX</DefineConstants>
+        <DefineConstants>$(DefineConstants);SL_PLATFORM_LINUX;SL_SOCK_API_POSIX</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(OSPlatformOSX)' == 'true'">
-        <DefineConstants>$(DefineConstants);SVL_PLATFORM_OSX;SVL_SOCK_API_POSIX</DefineConstants>
+        <DefineConstants>$(DefineConstants);SL_PLATFORM_OSX;SL_SOCK_API_POSIX</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -36,7 +36,7 @@
         <PluginBaseName>svlynxDSO</PluginBaseName>
 
         <PluginPrefix Condition="'$(OSPlatformLinux)' == 'true'">lib</PluginPrefix>
-		<PluginPrefix Condition="'$(OSPlatformOSX)' == 'true'">lib</PluginPrefix>
+        <PluginPrefix Condition="'$(OSPlatformOSX)' == 'true'">lib</PluginPrefix>
 
         <PluginExt Condition="'$(PluginExt)' == ''">dll</PluginExt>
         <PluginExt Condition="'$(OSPlatformLinux)' == 'true'">so</PluginExt>
@@ -44,7 +44,7 @@
 
         <PluginFullName>$(PluginPrefix)$(PluginBaseName).$(PluginExt)</PluginFullName>
         <PluginFullPath>$(PluginDir)$(PluginArchDir)$(PluginFullName)</PluginFullPath>
-		<PluginFullPathOSX>$(PluginDir)$(PluginArchDir)$(PluginBaseName).bundle</PluginFullPathOSX>
+        <PluginFullPathOSX>$(PluginDir)$(PluginArchDir)$(PluginBaseName).bundle</PluginFullPathOSX>
     </PropertyGroup>
 
 </Project>

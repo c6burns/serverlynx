@@ -5,7 +5,7 @@
 #elif TN_PLATFORM_POSIX
 #    define SVL_SONAME "./libsvlynxDSO.so"
 #    elif TN_PLATFORM_OSX
-#    define SVL_SONAME "svlynxDSO.dylib"
+#    define SVL_SONAME "./libsvlynxDSO.dylib"
 #else
 #    error "Invalid platform"
 #endif
