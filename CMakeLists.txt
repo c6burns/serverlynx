@@ -53,6 +53,8 @@ endif()
 
 #
 # build socklynx
+set(SL_SKIP_POSTBUILD true CACHE BOOL "")
+mark_as_advanced(FORCE SL_SKIP_POSTBUILD)
 if(NOT EXISTS ${SVL_DEPS_DIR}/socklynx)
     execute_process(COMMAND git clone https://github.com/c6burns/socklynx WORKING_DIRECTORY ${SVL_DEPS_DIR})
 endif()
@@ -65,7 +67,7 @@ add_custom_target(socklynx_update
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps/socklynx/include)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/deps/socklynx)
-add_dependencies(socklynxDSO socklynx_update)
+add_dependencies(socklynx socklynx_update)
 
 #
 # build tn
@@ -160,7 +162,6 @@ endif()
 
 #
 # build svlynx test executables
-include_directories(tests)
 set(SVL_TESTS_C
     "tests/test_service.c"
     "tests/test_plugin.c"
@@ -183,6 +184,9 @@ tn_add_test_case(test_svl_plugin_start_stop_immediately_twice)
 tn_generate_test_driver(svl-tests svl)
 target_link_libraries(svl-tests ${SVL_LINK_LIBS})
 target_compile_definitions(svl-tests PRIVATE ${SVL_DEFINES})
+
+message("SVL_LINK_LIBS: ${SVL_LINK_LIBS}")
+message("SVL_DEFINES: ${SVL_DEFINES}")
 
 # runner for single test for easy debug step through an impl issue
 tn_test_single(test_plugin test_svl_plugin_start_stop_immediately "${SVL_LINK_LIBS}" "${SVL_DEFINES}")
