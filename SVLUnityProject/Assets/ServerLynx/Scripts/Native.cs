@@ -312,5 +312,164 @@ namespace SL
 
         [DllImport(SL_DSO_NAME, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         internal static extern int servlynx_stop(void* service);
+
+        const int SizeOfBaseEvent = 64;
+
+        enum tn_event_type_t
+        {
+            TN_EVENT_NONE,
+            TN_EVENT_START,
+            TN_EVENT_STOP,
+            TN_EVENT_IOERROR,
+            TN_EVENT_CLIENT_OPEN,
+            TN_EVENT_CLIENT_CLOSE,
+            TN_EVENT_CLIENT_READ,
+            TN_EVENT_STATS,
+        }
+
+        /* tn_event_base_t: base event */
+        [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseEvent, CharSet = CharSet.Ansi)]
+        internal readonly ref struct tn_event_base_t
+        {
+            [FieldOffset(0)] public readonly uint id;
+            [FieldOffset(4)] public readonly uint type;
+            [FieldOffset(8)] public readonly ulong cmd_id;
+        };
+
+        /* tn_event_service_start_t: service started */
+        [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseEvent, CharSet = CharSet.Ansi)]
+        internal readonly ref struct tn_event_service_start_t
+        {
+            [FieldOffset(0)] public readonly uint id;
+            [FieldOffset(4)] public readonly uint type;
+            [FieldOffset(8)] public readonly ulong cmd_id;
+            [FieldOffset(16)] public readonly void* service;
+        };
+
+        /* tn_event_service_stop_t: service stopped */
+        [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseEvent, CharSet = CharSet.Ansi)]
+        internal readonly ref struct tn_event_service_stop_t
+        {
+            [FieldOffset(0)] public readonly uint id;
+            [FieldOffset(4)] public readonly uint type;
+            [FieldOffset(8)] public readonly ulong cmd_id;
+            [FieldOffset(16)] public readonly void* service;
+        };
+
+        /* tn_event_error_t: error event */
+        [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseEvent, CharSet = CharSet.Ansi)]
+        public readonly ref struct tn_event_error_t
+        {
+            [FieldOffset(0)] public readonly uint id;
+            [FieldOffset(4)] public readonly uint type;
+            [FieldOffset(8)] public readonly ulong cmd_id;
+            [FieldOffset(16)] public readonly ulong client_id;
+            [FieldOffset(24)] public readonly uint error_code;
+        };
+
+        /* tn_event_client_open_t: client connected */
+        [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseEvent, CharSet = CharSet.Ansi)]
+        public readonly ref struct tn_event_client_open_t
+        {
+            [FieldOffset(0)] public readonly uint id;
+            [FieldOffset(4)] public readonly uint type;
+            [FieldOffset(8)] public readonly ulong cmd_id;
+            [FieldOffset(16)] public readonly ulong client_id;
+            [FieldOffset(24)] public readonly Endpoint endpoint;
+        };
+
+        /* tn_event_client_close_t: client disconnected */
+        [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseEvent, CharSet = CharSet.Ansi)]
+        public readonly ref struct tn_event_client_close_t
+        {
+            [FieldOffset(0)] public readonly uint id;
+            [FieldOffset(4)] public readonly uint type;
+            [FieldOffset(8)] public readonly ulong cmd_id;
+            [FieldOffset(16)] public readonly ulong client_id;
+        };
+
+        /* tn_event_client_read_t: client recv buffer */
+        [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseEvent, CharSet = CharSet.Ansi)]
+        public readonly ref struct tn_event_client_read_t
+        {
+            [FieldOffset(0)] public readonly uint id;
+            [FieldOffset(4)] public readonly uint type;
+            [FieldOffset(8)] public readonly ulong cmd_id;
+            [FieldOffset(16)] public readonly ulong client_id;
+            [FieldOffset(24)] public readonly byte* buffer;
+            [FieldOffset(32)] public readonly uint len;
+            [FieldOffset(36)] public readonly uint channel;
+            [FieldOffset(40)] public readonly void* priv;
+        };
+
+        /* tn_event_client_read_t: client recv buffer */
+        [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseEvent, CharSet = CharSet.Ansi)]
+        public readonly ref struct tn_event_stats_s {
+            [FieldOffset(0)] public readonly uint id;
+            [FieldOffset(4)] public readonly uint type;
+            [FieldOffset(8)] public readonly ulong cmd_id;
+            [FieldOffset(16)] public readonly uint clients_total;
+            [FieldOffset(20)] public readonly uint recv_msgs;
+            [FieldOffset(24)] public readonly uint recv_bytes;
+            [FieldOffset(28)] public readonly uint send_msgs;
+            [FieldOffset(32)] public readonly uint send_bytes;
+            [FieldOffset(36)] public readonly uint events_total;
+            [FieldOffset(40)] public readonly uint events_inuse;
+            [FieldOffset(44)] public readonly uint events_free;
+            [FieldOffset(48)] public readonly uint buffers_total;
+            [FieldOffset(52)] public readonly uint buffers_inuse;
+            [FieldOffset(56)] public readonly uint buffers_free;
+        };
+
+        const int SizeOfBaseCmd = 64;
+
+        enum tn_cmd_type_t
+        {
+            TN_CMD_NONE,
+            TN_CMD_CLIENT_OPEN,
+            TN_CMD_CLIENT_CLOSE,
+            TN_CMD_CLIENT_SEND,
+        };
+
+        /* base cmd */
+        [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseCmd, CharSet = CharSet.Ansi)]
+        public readonly ref struct tn_cmd_base_t
+        {
+            [FieldOffset(0)] public readonly uint id;
+            [FieldOffset(4)] public readonly uint type;
+        };
+
+        /* create client connection */
+        [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseCmd, CharSet = CharSet.Ansi)]
+        public readonly ref struct tn_cmd_client_open_t
+        {
+            [FieldOffset(0)] public readonly uint id;
+            [FieldOffset(4)] public readonly uint type;
+            [FieldOffset(8)] public readonly void* priv;
+            [FieldOffset(16)] public readonly Endpoint endpoint;
+        };
+
+        /* disconnect client */
+        [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseCmd, CharSet = CharSet.Ansi)]
+        public readonly ref struct tn_cmd_client_close_t
+        {
+            [FieldOffset(0)] public readonly uint id;
+            [FieldOffset(4)] public readonly uint type;
+            [FieldOffset(8)] public readonly ulong client_id;
+        };
+
+        /* send bytes */
+        [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseCmd, CharSet = CharSet.Ansi)]
+        public readonly ref struct tn_cmd_client_send_t
+        {
+            [FieldOffset(0)] public readonly uint id;
+            [FieldOffset(4)] public readonly uint type;
+            [FieldOffset(8)] public readonly ulong client_id;
+            [FieldOffset(16)] public readonly byte* buffer;
+            [FieldOffset(24)] public readonly ulong len;
+            [FieldOffset(32)] public readonly void* priv;
+            [FieldOffset(40)] public readonly byte channel;
+            [FieldOffset(41)] public readonly byte flags;
+        };
     }
 }
