@@ -23,9 +23,9 @@ int handle_client_read(svl_service_t *service, tn_event_client_read_t *evt_read)
     TN_GUARD_CLEANUP(svl_link_list_get(&service->link_list, evt_read->client_id, &link));
     assert(link);
 
-    tn_buffer_t *tn_buffer = evt_read->priv;
-    tn_buffer_read_reset(tn_buffer);
-    TN_GUARD_CLEANUP(ret = svl_service_send(service, link, tn_buffer_read_ptr(tn_buffer), tn_buffer_read_length(tn_buffer)));
+    // tn_buffer_t *tn_buffer = evt_read->priv;
+    // tn_buffer_read_reset(tn_buffer);
+    // TN_GUARD_CLEANUP(ret = svl_service_send(service, link, tn_buffer_read_ptr(tn_buffer), tn_buffer_read_length(tn_buffer)));
 
     return TN_SUCCESS;
 

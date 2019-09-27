@@ -7,7 +7,14 @@
 
 #include "svlynx/service.h"
 
-// priv tcp service impl
+typedef struct svl_service_write_req_s {
+    uv_write_t uv_req;
+    uv_buf_t uv_buf;
+    svl_link_t *svl_link;
+    uint64_t id;
+    uint64_t cmd_id;
+} svl_service_write_req_t;
+
 typedef struct svl_service_priv_s {
     uv_loop_t *uv_loop;
     uv_tcp_t *tcp_handle;
@@ -15,15 +22,9 @@ typedef struct svl_service_priv_s {
     uv_prepare_t *uv_prep;
     uv_check_t *uv_check;
     uv_signal_t *uv_signal;
+    svl_service_write_req_t *send_req;
+    tn_list_ptr_t send_req_list;
 } svl_service_priv_t;
-
-typedef struct svl_service_write_req_s {
-    uv_write_t uv_req;
-    uv_buf_t uv_buf;
-    svl_link_t *svl_link;
-    tn_buffer_t *tn_buffer;
-    uint64_t id;
-} svl_service_write_req_t;
 
 void on_sigint_cb(uv_signal_t *handle, int signum);
 void on_close_release_cb(uv_handle_t *handle);

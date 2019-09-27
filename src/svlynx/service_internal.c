@@ -77,11 +77,39 @@ cleanup:
 }
 
 // --------------------------------------------------------------------------------------------------------------
+// void on_send_cb_old(uv_write_t *req, int status)
+// {
+//     svl_service_write_req_t *write_req = (svl_service_write_req_t *)req;
+//     TN_ASSERT(write_req);
+//     TN_ASSERT(write_req->svl_link->service);
+
+//     if (status) {
+//         tn_log_uv_error(status);
+//     } else {
+//         send_msgs++;
+//         send_bytes += write_req->uv_buf.len;
+//     }
+
+//     svl_service_t *service = write_req->svl_link->service;
+//     tn_buffer_t *reqbuf = write_req->tn_buffer;
+//     write_req->tn_buffer = NULL;
+//     if (tn_buffer_pool_push(&service->pool_write, reqbuf)) {
+//         tn_log_error("push failed stranding buffer on link: %zu", write_req->svl_link->id);
+//     }
+
+//     if (tn_queue_spsc_push(&service->write_reqs_free, write_req)) {
+//         tn_log_error("push failed stranding write request: %zu on link: %zu", write_req->id, write_req->svl_link->id);
+//     }
+// }
+
+// --------------------------------------------------------------------------------------------------------------
 void on_send_cb(uv_write_t *req, int status)
 {
     svl_service_write_req_t *write_req = (svl_service_write_req_t *)req;
     TN_ASSERT(write_req);
+    TN_ASSERT(write_req->svl_link);
     TN_ASSERT(write_req->svl_link->service);
+    TN_ASSERT(write_req->svl_link->service->priv);
 
     if (status) {
         tn_log_uv_error(status);
@@ -90,14 +118,8 @@ void on_send_cb(uv_write_t *req, int status)
         send_bytes += write_req->uv_buf.len;
     }
 
-    svl_service_t *service = write_req->svl_link->service;
-    tn_buffer_t *reqbuf = write_req->tn_buffer;
-    write_req->tn_buffer = NULL;
-    if (tn_buffer_pool_push(&service->pool_write, reqbuf)) {
-        tn_log_error("push failed stranding buffer on link: %zu", write_req->svl_link->id);
-    }
-
-    if (tn_queue_spsc_push(&service->write_reqs_free, write_req)) {
+    svl_service_priv_t *priv = write_req->svl_link->service->priv;
+    if (tn_list_ptr_push_back(&priv->send_req_list, write_req)) {
         tn_log_error("push failed stranding write request: %zu on link: %zu", write_req->id, write_req->svl_link->id);
     }
 }
@@ -329,27 +351,27 @@ void on_prep_cb(uv_prepare_t *handle)
 {
     TN_ASSERT(handle && handle->data);
 
-    int ret;
-    svl_service_write_req_t *send_req = NULL;
-    svl_service_t *service = handle->data;
+    // int ret;
+    // svl_service_write_req_t *send_req = NULL;
+    // svl_service_t *service = handle->data;
 
-    while (!tn_queue_spsc_pop_back(&service->write_reqs_ready, (void **)&send_req)) {
-        TN_ASSERT(send_req);
+    // while (!tn_queue_spsc_pop_back(&service->write_reqs_ready, (void **)&send_req)) {
+    //     TN_ASSERT(send_req);
 
-        if (send_req->svl_link->state != SVL_LINK_OPEN) {
-            tn_buffer_pool_push(&service->pool_write, send_req->tn_buffer);
-            tn_queue_spsc_push(&service->write_reqs_free, send_req);
-            continue;
-        }
+    //     if (send_req->svl_link->state != SVL_LINK_OPEN) {
+    //         tn_buffer_pool_push(&service->pool_write, send_req->tn_buffer);
+    //         tn_queue_spsc_push(&service->write_reqs_free, send_req);
+    //         continue;
+    //     }
 
-        if ((ret = uv_write((uv_write_t *)send_req, (uv_stream_t *)send_req->svl_link->priv, &send_req->uv_buf, 1, on_send_cb))) {
-            tn_log_error("IO send failed:  %d -- %s -- %s", ret, uv_err_name(ret), uv_strerror(ret));
-            tn_buffer_t *reqbuf = send_req->tn_buffer;
-            send_req->tn_buffer = NULL;
-            tn_buffer_pool_push(&service->pool_write, reqbuf);
-            tn_queue_spsc_push(&service->write_reqs_free, send_req);
-        }
-    }
+    //     if ((ret = uv_write((uv_write_t *)send_req, (uv_stream_t *)send_req->svl_link->priv, &send_req->uv_buf, 1, on_send_cb))) {
+    //         tn_log_error("IO send failed:  %d -- %s -- %s", ret, uv_err_name(ret), uv_strerror(ret));
+    //         tn_buffer_t *reqbuf = send_req->tn_buffer;
+    //         send_req->tn_buffer = NULL;
+    //         tn_buffer_pool_push(&service->pool_write, reqbuf);
+    //         tn_queue_spsc_push(&service->write_reqs_free, send_req);
+    //     }
+    // }
 }
 
 // private ------------------------------------------------------------------------------------------------------
@@ -421,16 +443,28 @@ static inline void handle_cmd_send(svl_service_t *service, tn_cmd_client_send_t 
 {
     int ret = TN_ERROR_INVAL;
     svl_link_t *link = NULL;
+    svl_service_write_req_t *send_req;
+    svl_service_priv_t *priv = service->priv;
     TN_GUARD_CLEANUP(ret = svl_link_list_get(&service->link_list, cmd_send->client_id, &link));
 
     TN_GUARD_CLEANUP(!link->priv || link->state != SVL_LINK_OPEN || uv_is_closing((uv_handle_t *)link->priv));
 
-    uv_close((uv_handle_t *)link->priv, on_close_link_cb);
+    TN_GUARD_CLEANUP(tn_list_ptr_pop_back(&priv->send_req_list, (void **)&send_req));
+    send_req->cmd_id = cmd_send->id;
+    send_req->svl_link = link;
+    send_req->uv_buf = uv_buf_init(cmd_send->buffer, TN_BUFLEN_CAST(cmd_send->len));
+
+    if ((ret = uv_write((uv_write_t *)send_req, (uv_stream_t *)send_req->svl_link->priv, &send_req->uv_buf, 1, on_send_cb))) {
+        tn_log_error("IO send failed:  %d -- %s -- %s", ret, uv_err_name(ret), uv_strerror(ret));
+        tn_list_ptr_push_back(&priv->send_req_list, send_req);
+    }
+
+    // uv_close((uv_handle_t *)link->priv, on_close_link_cb);
 
     return;
 
 cleanup:
-    tn_log_error("failed to close connection: %d -- %s -- %s", ret, uv_err_name(ret), uv_strerror(ret));
+    tn_log_error("failed to send to connection: %d -- %s -- %s", ret, uv_err_name(ret), uv_strerror(ret));
 }
 
 // --------------------------------------------------------------------------------------------------------------
@@ -452,7 +486,7 @@ void on_check_cb(uv_check_t *handle)
             handle_cmd_close(service, (tn_cmd_client_close_t *)cmd_base);
             break;
         case TN_CMD_CLIENT_SEND:
-            tn_log_error("TN_CMD_CLIENT_SEND not implemented");
+            handle_cmd_send(service, (tn_cmd_client_send_t *)cmd_base);
             break;
         }
 

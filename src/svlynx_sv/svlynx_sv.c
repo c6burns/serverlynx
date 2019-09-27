@@ -11,16 +11,17 @@
 
 int handle_client_read(svl_service_t *service, tn_event_client_read_t *evt_read)
 {
-    int ret;
+    int ret = TN_ERROR;
+    uint64_t cmd_id;
     svl_link_t *link;
 
-    ret = TN_EVENT_NOCHAN;
-    TN_GUARD_CLEANUP(svl_link_list_get(&service->link_list, evt_read->client_id, &link));
-    assert(link);
+    // ret = TN_EVENT_NOCHAN;
+    // TN_GUARD_CLEANUP(svl_link_list_get(&service->link_list, evt_read->client_id, &link));
+    // assert(link);
 
     tn_buffer_t *tn_buffer = evt_read->priv;
     tn_buffer_read_reset(tn_buffer);
-    TN_GUARD_CLEANUP(ret = svl_service_send(service, link, tn_buffer_read_ptr(tn_buffer), tn_buffer_read_length(tn_buffer)));
+    TN_GUARD_CLEANUP(ret = svl_service_cmd_send(service, link->id, &cmd_id, tn_buffer_read_ptr(tn_buffer), tn_buffer_read_length(tn_buffer)));
 
     return TN_SUCCESS;
 
@@ -57,10 +58,12 @@ void handle_client_close(svl_service_t *service, tn_event_client_close_t *evt)
 int main(void)
 {
     int ret;
+    size_t max_clients = 100;
     uint32_t frame = 0;
     tn_system_t system;
     tn_endpoint_t ep_connect = {0};
     tn_endpoint_t ep_listen = {0};
+    svl_service_cfg_t service_cfg;
     svl_service_t svl_service = {
         .priv = NULL,
     };
@@ -70,7 +73,9 @@ int main(void)
     uint32_t cores = tn_system_cpu_count(&system);
     tn_thread_set_workers(cores);
 
-    TN_GUARD(svl_service_setup(&svl_service, SVL_SV_MAX_CLIENTS));
+    TN_GUARD(svl_service_config_setup_default(&service_cfg, max_clients));
+    tn_log_info("service heap size for %zu clients: %zu MB", max_clients, service_cfg.total_heap_size >> 10 >> 10);
+    TN_GUARD(svl_service_setup(&svl_service, max_clients));
 
     tn_endpoint_from_byte(&ep_listen, 7777, 0, 0, 0, 0);
     TN_GUARD(svl_service_listen(&svl_service, &ep_listen));

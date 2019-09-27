@@ -161,3 +161,23 @@ SL_API int32_t SL_CALL servlynx_stop(svl_service_t *service)
     TN_GUARD_NULL(service);
     return service_stop(service);
 }
+
+SL_API int32_t SL_CALL servlynx_events_acquire(svl_service_t *service, tn_event_base_t ***out_evt_ptr_arr, uint64_t *out_evt_ptr_count)
+{
+    TN_GUARD_NULL(service);
+    TN_GUARD_NULL(out_evt_ptr_arr);
+    TN_GUARD_NULL(out_evt_ptr_count);
+
+    *out_evt_ptr_arr = NULL;
+    *out_evt_ptr_count = 0;
+    TN_GUARD(svl_service_events_acquire(service, out_evt_ptr_arr, out_evt_ptr_count));
+
+    return TN_SUCCESS;
+}
+
+SL_API int32_t SL_CALL servlynx_events_release(svl_service_t *service)
+{
+    TN_GUARD_NULL(service);
+    TN_GUARD(svl_service_events_release(service));
+    return TN_SUCCESS;
+}

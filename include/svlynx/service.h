@@ -36,9 +36,28 @@ typedef struct svl_service_stats_s {
     uint64_t tstamp_last;
 } svl_service_stats_t;
 
+typedef struct svl_service_cfg_s {
+    size_t link_concurrency;
+    size_t link_buffer_mult;
+    size_t link_buffer_outbound_count;
+    size_t link_buffer_outbound_size;
+    size_t link_buffer_inbound_count;
+    size_t link_buffer_inbound_size;
+    size_t event_mult;
+    size_t event_count;
+    size_t cmd_mult;
+    size_t cmd_count;
+    size_t write_req_mult;
+    size_t write_req_count;
+    size_t total_heap_size;
+} svl_service_cfg_t;
+
 typedef struct svl_service_s {
     /* impl specific struct pointer */
     void *priv;
+
+    /* heap allocation */
+    // tn_heap *heap_allocation
 
     /* IO thread (calls uv_run, handles read/write, etc) */
     tn_thread_t thread_io;
@@ -86,6 +105,9 @@ typedef struct svl_service_s {
     /* server state (connecting, connecting, etc) */
     tn_atomic_t state;
 } svl_service_t;
+
+int svl_service_config_setup(svl_service_cfg_t *cfg);
+int svl_service_config_setup_default(svl_service_cfg_t *cfg, size_t max_ccu);
 
 int svl_service_setup(svl_service_t *service, size_t max_clients);
 void svl_service_cleanup(svl_service_t *service);

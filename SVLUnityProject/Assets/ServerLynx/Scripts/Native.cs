@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-/* comment this to remove ipv6 code and shorten the length of Endpoint to 16 bytes from 28 */
 #define SL_IPV6_ENABLED
 
 #if UNITY_STANDALONE_WIN || UNITY_XBONE
@@ -313,9 +312,15 @@ namespace SL
         [DllImport(SL_DSO_NAME, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         internal static extern int servlynx_stop(void* service);
 
+        [DllImport(SL_DSO_NAME, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern int servlynx_acquire_events(void* service, tn_event_base_t*** out_evt_ptr_arr, ulong* out_evt_ptr_count);
+
+        [DllImport(SL_DSO_NAME, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern int servlynx_release_events(void* service);
+
         const int SizeOfBaseEvent = 64;
 
-        enum tn_event_type_t
+        public enum tn_event_type_t
         {
             TN_EVENT_NONE,
             TN_EVENT_START,
@@ -329,7 +334,7 @@ namespace SL
 
         /* tn_event_base_t: base event */
         [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseEvent, CharSet = CharSet.Ansi)]
-        internal readonly ref struct tn_event_base_t
+        public readonly ref struct tn_event_base_t
         {
             [FieldOffset(0)] public readonly uint id;
             [FieldOffset(4)] public readonly uint type;
@@ -338,7 +343,7 @@ namespace SL
 
         /* tn_event_service_start_t: service started */
         [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseEvent, CharSet = CharSet.Ansi)]
-        internal readonly ref struct tn_event_service_start_t
+        public readonly ref struct tn_event_service_start_t
         {
             [FieldOffset(0)] public readonly uint id;
             [FieldOffset(4)] public readonly uint type;
@@ -348,7 +353,7 @@ namespace SL
 
         /* tn_event_service_stop_t: service stopped */
         [StructLayout(LayoutKind.Explicit, Size = SizeOfBaseEvent, CharSet = CharSet.Ansi)]
-        internal readonly ref struct tn_event_service_stop_t
+        public readonly ref struct tn_event_service_stop_t
         {
             [FieldOffset(0)] public readonly uint id;
             [FieldOffset(4)] public readonly uint type;
@@ -423,7 +428,7 @@ namespace SL
 
         const int SizeOfBaseCmd = 64;
 
-        enum tn_cmd_type_t
+        public enum tn_cmd_type_t
         {
             TN_CMD_NONE,
             TN_CMD_CLIENT_OPEN,

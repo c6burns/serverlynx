@@ -10,6 +10,22 @@
 #include "svlynx/link.h"
 #include "service_internal.h"
 
+svl_service_cfg_t svl_service_config_default_instance = {
+    .link_concurrency = 100,
+    .link_buffer_mult = 4,
+    .link_buffer_outbound_count = 0,
+    .link_buffer_outbound_size = 65536,
+    .link_buffer_inbound_count = 0,
+    .link_buffer_inbound_size = 65536,
+    .event_mult = 4,
+    .event_count = 0,
+    .cmd_mult = 4,
+    .cmd_count = 0,
+    .write_req_mult = 4,
+    .write_req_count = 0,
+    .total_heap_size = 0,
+};
+
 // private ------------------------------------------------------------------------------------------------------
 void svl_service_set_state(svl_service_t *service, svl_service_state_t state)
 {
@@ -42,6 +58,12 @@ void svl_service_io_thread(void *data)
     TN_GUARD_NULL_CLEANUP(priv->uv_prep = TN_MEM_ACQUIRE(sizeof(*priv->uv_prep)));
     TN_GUARD_NULL_CLEANUP(priv->uv_check = TN_MEM_ACQUIRE(sizeof(*priv->uv_check)));
     TN_GUARD_NULL_CLEANUP(priv->uv_signal = TN_MEM_ACQUIRE(sizeof(*priv->uv_signal)));
+    TN_GUARD_NULL_CLEANUP(priv->send_req = TN_MEM_ACQUIRE(sizeof(*priv->send_req) * service->buffer_count));
+
+    TN_GUARD_CLEANUP(tn_list_ptr_setup(&priv->send_req_list, service->buffer_count));
+    for (int i = 0; i < service->buffer_count; i++) {
+        TN_GUARD_CLEANUP(tn_list_ptr_push_back(&priv->send_req_list, &priv->send_req[i]));
+    }
 
     TN_GUARD_CLEANUP(ret = uv_loop_init(priv->uv_loop));
 
@@ -101,14 +123,56 @@ cleanup:
         tn_log_uv_error(ret);
     }
 
+    TN_MEM_RELEASE(priv->uv_check);
+    TN_MEM_RELEASE(priv->uv_prep);
+    TN_MEM_RELEASE(priv->uv_accept_timer);
+    TN_MEM_RELEASE(priv->tcp_handle);
+    TN_MEM_RELEASE(priv->uv_loop);
+    TN_MEM_RELEASE(priv->send_req);
 
-    if (priv->uv_check) TN_MEM_RELEASE(priv->uv_check);
-    if (priv->uv_prep) TN_MEM_RELEASE(priv->uv_prep);
-    if (priv->uv_accept_timer) TN_MEM_RELEASE(priv->uv_accept_timer);
-    if (priv->tcp_handle) TN_MEM_RELEASE(priv->tcp_handle);
-    if (priv->uv_loop) TN_MEM_RELEASE(priv->uv_loop);
+    tn_list_ptr_cleanup(&priv->send_req_list);
 
     return;
+}
+
+// --------------------------------------------------------------------------------------------------------------
+int svl_service_config_setup(svl_service_cfg_t *cfg)
+{
+    TN_ASSERT(cfg);
+
+    TN_GUARD_NULL(cfg->link_concurrency);
+    TN_GUARD_NULL(cfg->link_buffer_mult);
+    TN_GUARD_NULL(cfg->link_buffer_outbound_size);
+    TN_GUARD_NULL(cfg->link_buffer_inbound_size);
+    TN_GUARD_NULL(cfg->event_mult);
+    TN_GUARD_NULL(cfg->cmd_mult);
+    TN_GUARD_NULL(cfg->write_req_mult);
+
+    cfg->link_buffer_inbound_count = cfg->link_buffer_mult * cfg->link_concurrency;
+    cfg->link_buffer_outbound_count = cfg->link_buffer_mult * cfg->link_concurrency;
+    cfg->event_count = cfg->event_mult * cfg->link_concurrency;
+    cfg->cmd_count = cfg->cmd_mult * cfg->link_concurrency;
+    cfg->write_req_count = cfg->write_req_mult * cfg->link_concurrency;
+
+    cfg->total_heap_size = 0;
+    cfg->total_heap_size += cfg->link_buffer_outbound_size * cfg->link_buffer_outbound_count;
+    cfg->total_heap_size += cfg->link_buffer_inbound_size * cfg->link_buffer_inbound_count;
+    cfg->total_heap_size += cfg->event_count * sizeof(tn_event_base_t);
+    cfg->total_heap_size += cfg->cmd_count * sizeof(tn_cmd_base_t);
+    cfg->total_heap_size += cfg->write_req_count * sizeof(svl_service_write_req_t);
+    cfg->total_heap_size += cfg->total_heap_size >> 1;
+
+    return TN_SUCCESS;
+}
+
+// --------------------------------------------------------------------------------------------------------------
+int svl_service_config_setup_default(svl_service_cfg_t *cfg, size_t max_ccu)
+{
+    TN_ASSERT(cfg);
+    TN_GUARD_NULL(max_ccu);
+    memcpy(cfg, &svl_service_config_default_instance, sizeof(*cfg));
+    cfg->link_concurrency = max_ccu;
+    return svl_service_config_setup(cfg);
 }
 
 // --------------------------------------------------------------------------------------------------------------
@@ -142,7 +206,6 @@ int svl_service_setup(svl_service_t *service, size_t max_clients)
     for (uint64_t i = 0; i < service->buffer_count; i++) {
         write_req = &service->write_reqs[i];
         write_req->id = i;
-        write_req->tn_buffer = NULL;
         TN_GUARD_CLEANUP(tn_queue_spsc_push(&service->write_reqs_free, write_req));
 
         service->event_updates[i] = NULL;
@@ -318,39 +381,39 @@ int svl_service_events_release(svl_service_t *service)
 }
 
 // --------------------------------------------------------------------------------------------------------------
-int svl_service_send(svl_service_t *service, svl_link_t *link, const uint8_t *sndbuf, const size_t sndlen)
-{
-    TN_ASSERT(service);
-    TN_ASSERT(link);
-    TN_ASSERT(sndbuf && sndlen);
+// int svl_service_send(svl_service_t *service, svl_link_t *link, const uint8_t *sndbuf, const size_t sndlen)
+// {
+//     TN_ASSERT(service);
+//     TN_ASSERT(link);
+//     TN_ASSERT(sndbuf && sndlen);
 
-    int ret;
-    svl_service_write_req_t *send_req;
+//     int ret;
+//     svl_service_write_req_t *send_req;
 
-    /* send req will now be in our hands, but we need to pop it or drop it before return */
-    ret = TN_SEND_NOREQ;
-    TN_GUARD_CLEANUP(tn_queue_spsc_peek(&service->write_reqs_free, (void **)&send_req));
+//     /* send req will now be in our hands, but we need to pop it or drop it before return */
+//     ret = TN_SEND_NOREQ;
+//     TN_GUARD_CLEANUP(tn_queue_spsc_peek(&service->write_reqs_free, (void **)&send_req));
 
-    ret = TN_SEND_NOBUF;
-    TN_GUARD_CLEANUP(tn_buffer_pool_peek(&service->pool_write, &send_req->tn_buffer));
-    TN_GUARD_CLEANUP(tn_buffer_write(send_req->tn_buffer, sndbuf, sndlen));
+//     ret = TN_SEND_NOBUF;
+//     TN_GUARD_CLEANUP(tn_buffer_pool_peek(&service->pool_write, &send_req->tn_buffer));
+//     TN_GUARD_CLEANUP(tn_buffer_write(send_req->tn_buffer, sndbuf, sndlen));
 
-    send_req->svl_link = link;
-    send_req->uv_buf.base = tn_buffer_read_ptr(send_req->tn_buffer);
-    send_req->uv_buf.len = TN_BUFLEN_CAST(tn_buffer_length(send_req->tn_buffer));
+//     send_req->svl_link = link;
+//     send_req->uv_buf.base = tn_buffer_read_ptr(send_req->tn_buffer);
+//     send_req->uv_buf.len = TN_BUFLEN_CAST(tn_buffer_length(send_req->tn_buffer));
 
-    /* push the request into the ready queue *before* popping anything from free queues */
-    ret = TN_SEND_PUSH;
-    TN_GUARD(tn_queue_spsc_push(&service->write_reqs_ready, send_req));
-    tn_buffer_pool_pop_cached(&service->pool_write);
-    tn_queue_spsc_pop_cached(&service->write_reqs_free);
+//     /* push the request into the ready queue *before* popping anything from free queues */
+//     ret = TN_SEND_PUSH;
+//     TN_GUARD(tn_queue_spsc_push(&service->write_reqs_ready, send_req));
+//     tn_buffer_pool_pop_cached(&service->pool_write);
+//     tn_queue_spsc_pop_cached(&service->write_reqs_free);
 
-    return TN_SUCCESS;
+//     return TN_SUCCESS;
 
-cleanup:
-    tn_log_error("failed to send write request: %d", ret);
-    return ret;
-}
+// cleanup:
+//     tn_log_error("failed to send write request: %d", ret);
+//     return ret;
+// }
 
 // --------------------------------------------------------------------------------------------------------------
 int svl_service_cmd_open(svl_service_t *service, const tn_endpoint_t *endpoint, uint64_t *cmd_id)
@@ -409,18 +472,24 @@ int svl_service_cmd_send(svl_service_t *service, const uint64_t client_id, uint6
     TN_ASSERT(msg);
     TN_ASSERT(msglen);
 
+    int ret = TN_ERROR;
     *cmd_id = UINT64_MAX;
+    svl_service_write_req_t *send_req = NULL;
 
     svl_service_state_t state = svl_service_state(service);
     TN_GUARD_CLEANUP(state != SVL_SERVICE_STARTED);
 
-    //tn_cmd_client_send_t *cmd_send;
-    //TN_GUARD_CLEANUP(tn_cmd_list_free_pop_send(&service->cmds, &cmd_send));
-    //cmd_send->client_id = client_id;
-    //cmd_send->buffer = (uint8_t *)msg;
-    //cmd_send->len = msglen;
-    //*cmd_id = cmd_send->id;
-    //TN_GUARD_CLEANUP(tn_cmd_list_ready_push(&service->cmds, cmd_send));
+    ret = TN_SEND_NOREQ;
+    TN_GUARD_CLEANUP(tn_queue_spsc_peek(&service->write_reqs_free, (void **)&send_req));
+
+    tn_cmd_client_send_t *cmd_send;
+    TN_GUARD_CLEANUP(tn_cmd_list_free_pop_send(&service->cmds, &cmd_send));
+    cmd_send->client_id = client_id;
+    cmd_send->buffer = (uint8_t *)msg;
+    cmd_send->len = msglen;
+    cmd_send->priv = send_req;
+    *cmd_id = cmd_send->id;
+    TN_GUARD_CLEANUP(tn_cmd_list_ready_push(&service->cmds, cmd_send));
 
     return TN_SUCCESS;
 
